@@ -2,8 +2,8 @@
 
 const express = require('express');
 const connectDB = require('./config/database');
-const apiRoutes = require('./routes/index'); 
-const errorMiddleware = require('./middlewares/errorMiddleware'); 
+const apiRoutes = require('./V1/routes/index'); 
+const errorMiddleware = require('./V1/middlewares/errorMiddleware'); 
 
 const app = express();
 
@@ -13,8 +13,8 @@ connectDB();
 // Middleware setup
 app.use(express.json()); 
 
-// Define API routes
-app.use('/api', apiRoutes); 
+// // Define API routes
+// app.use('/api', apiRoutes); 
 
 // Error handling middleware
 app.use(errorMiddleware); 
