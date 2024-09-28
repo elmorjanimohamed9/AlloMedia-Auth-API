@@ -1,9 +1,19 @@
-const express = require('express');
+import express from 'express';
+import register from './userRoutes/register.js';
+import login from './userRoutes/login.js';
+// import forgetPassword from './userRoutes/forgetPassword.js';
+// import resetPassword from './userRoutes/resetPassword.js';
+import verifyOtpHandler from './userRoutes/verifyOpt.js';
+import verifyEmail from './userRoutes/verifyEmailRoute.js'; 
+
 const router = express.Router();
-const authRoutes = require('./userRoutes/register'); 
 
+// User routes
+router.use('/register', register);
+router.use('/login', login);
+// router.use('/forget-password', forgetPassword);
+// router.use('/reset-password', resetPassword);
+router.use('/verify-otp', verifyOtpHandler);
+router.use('/verify-email', verifyEmail);
 
-router.use('/auth', authRoutes);
-
-
-module.exports = router;
+export default router;

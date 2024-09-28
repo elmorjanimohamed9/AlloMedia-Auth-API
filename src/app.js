@@ -1,27 +1,20 @@
-// src/app.js
+import express from 'express';
+import connectDB from './config/database.js'; 
+import userRoutes from './api/V1/routes/index.js';
+import roleRoutes from './api/V1/routes/roleRoutes/roleRoutes.js'
 
-const express = require('express');
-const connectDB = require('./config/database');
-const apiRoutes = require('./V1/routes/index'); 
-const errorMiddleware = require('./V1/middlewares/errorMiddleware'); 
 
 const app = express();
 
-// Connect to MongoDB
+// Connect to the database
 connectDB();
 
 // Middleware setup
-app.use(express.json()); 
+app.use(express.json());
 
-// // Define API routes
-// app.use('/api', apiRoutes); 
+// Use routes
+app.use('/api/auth', userRoutes);
+app.use('/api/roles', roleRoutes);
 
-// Error handling middleware
-app.use(errorMiddleware); 
-
-// Basic route for testing
-app.get('/', (req, res) => {
-    res.send('Welcome to AlloMedia Delivery API');
-});
-
-module.exports = app;
+// Export the app for use in server.js
+export default app;
