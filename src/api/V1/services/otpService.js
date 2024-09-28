@@ -1,5 +1,3 @@
-//otpService
-
 import {sendOtpEmail} from '../services/emailService.js'
 
 import User from '../models/User.js';
