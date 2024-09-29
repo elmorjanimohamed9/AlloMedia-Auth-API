@@ -1,9 +1,5 @@
 import User from '../../models/User.js';
-import { generateToken } from '../../helpers/jwtHelper.js';
-import { sendPasswordResetEmail } from '../../services/emailService.js';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { sendOtp } from '../../services/otpService.js';
 
 export const forgotPasswordController = async (req, res) => {
   const { email } = req.body;
@@ -14,16 +10,9 @@ export const forgotPasswordController = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Générer un token JWT avec une expiration d'une heure
-    const resetToken = generateToken(user._id);
-
-    // Créer le lien de réinitialisation contenant le JWT
-    const resetUrl = `${process.env.BASE_URL}/reset-password/${resetToken}`;
-
-    // Envoyer l'e-mail de réinitialisation avec le lien
-    await sendPasswordResetEmail(user.email, resetUrl, user.firstName, user.lastName);
-
-    res.status(200).json({ message: 'Password reset email sent' });
+    await sendOtp(email, 'forgotPassword');  
+    
+    res.status(200).json({ message: 'OTP sent to your email for password reset' });
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ message: 'Server error. Please try again later.' });
