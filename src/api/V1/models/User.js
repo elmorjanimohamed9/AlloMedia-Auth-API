@@ -29,15 +29,14 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, 'Please provide a password'],
+        required: true,
         minlength: 8,
         validate: {
-            validator: function (v) {
-                return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(v);
+            validator: function(value) {
+                return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(value);
             },
-            message:
-                'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character, and must be at least 8 characters long'
-        }
+            message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character, and must be at least 8 characters long.',
+        },
     },
     phone: {
         type: String,

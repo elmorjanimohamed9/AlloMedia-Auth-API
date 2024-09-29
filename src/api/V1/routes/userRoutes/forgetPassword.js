@@ -1,8 +1,10 @@
-import express from "express";
-import { forgetPasswordController } from '../../controllers/auth/forgetPasswordController.js';
+import express from 'express';
+import { forgotPasswordController } from '../../controllers/auth/forgetPasswordController.js';
+import { validateForgotPassword } from '../../middlewares/validationMiddleware.js';
 
 const router = express.Router();
 
-router.post('/', forgetPasswordController);
+router.post('/', validateForgotPassword, forgotPasswordController);
 
-export default  router;
+
+export default router;

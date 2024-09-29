@@ -1,76 +1,106 @@
-import dotenv from 'dotenv';
 import request from 'supertest';
-import app from '../../../../app'; 
-import User from '../../models/User'; 
+import app from '../../../../app';
+import User from '../../models/User.js';
+import Role from '../../models/Role.js';
+import { sendVerificationEmail } from '../../services/emailService.js';
+import { generateToken } from '../../helpers/jwtHelper.js';
 import mongoose from 'mongoose';
 
-// Load environment variables
-dotenv.config();
-
-beforeAll(async () => {
-    // Connect to your test database
-    await mongoose.connect(process.env.TEST_DB_URI);
-});
-
-afterEach(async () => {
-    // Clean up the database after each test
-    await User.deleteMany({});
-});
-
-afterAll(async () => {
-    // Disconnect from the database
-    await mongoose.disconnect();
-});
+jest.mock('../../services/emailService.js');
+jest.mock('../../helpers/jwtHelper.js');
 
 describe('POST /api/auth/register', () => {
-    it('should register a user successfully', async () => {
-        const userData = {
-            firstName: 'John',
-            lastName: 'Doe',
-            email: 'john.doe@example.com',
-            password: 'Password123!',
-            phone: '0123456789',
-            address: '123 Media St, Media City'
-        };
+  let validUser;
+  let mockRole;
 
-        const response = await request(app).post('/api/auth/register').send(userData);
-        expect(response.status).toBe(201);
-        expect(response.body.message).toBe('User registered successfully. Please check your email for verification.');
-        expect(response.body.verificationToken).toBeDefined();
-    });
+  beforeAll(async () => {
+    await mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+  });
 
-    it('should return 400 if user already exists', async () => {
-        const userData = {
-            firstName: 'John',
-            lastName: 'Doe',
-            email: 'john.doe@example.com',
-            password: 'Password123!',
-            phone: '0123456789',
-            address: '123 Media St, Media City'
-        };
+  afterAll(async () => {
+    await mongoose.connection.close();
+  });
 
-        // First registration
-        await request(app).post('/api/auth/register').send(userData);
-        
-        // Try to register again
-        const response = await request(app).post('/api/auth/register').send(userData);
-        expect(response.status).toBe(400);
-        expect(response.body.message).toBe('User already exists');
-    });
+  beforeEach(() => {
+    validUser = {
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john.doe@example.com',
+      password: 'ValidPassword123!',
+      phone: '1234567890',
+      address: '123 Main St, City, Country',
+      roles: ['validRoleId']
+    };
 
-    it('should return 400 for invalid input', async () => {
-        const userData = {
-            firstName: '', 
-            lastName: 'Doe',
-            email: 'john.doe@example.com',
-            password: '123', 
-            phone: '0123456789',
-            address: '123 Media St, Media City'
-        };
-    
-        const response = await request(app).post('/api/auth/register').send(userData);
-        expect(response.status).toBe(400);
-        expect(response.body.message).toMatch(/First name is required/); 
-    });
-    
+    mockRole = {
+      _id: 'validRoleId',
+      name: 'user'
+    };
+
+    jest.spyOn(User, 'findOne').mockResolvedValue(null);
+    jest.spyOn(Role, 'find').mockResolvedValue([mockRole]);
+    jest.spyOn(User.prototype, 'save').mockResolvedValue(validUser);
+    generateToken.mockReturnValue('mockVerificationToken');
+    sendVerificationEmail.mockResolvedValue();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should register a new user successfully', async () => {
+    const response = await request(app)
+      .post('/api/auth/register')
+      .send(validUser);
+
+    expect(response.status).toBe(201);
+    expect(response.body.message).toBe('User registered successfully. Please check your email for verification.');
+    expect(response.body.verificationToken).toBe('mockVerificationToken');
+    expect(User.prototype.save).toHaveBeenCalled();
+    expect(sendVerificationEmail).toHaveBeenCalled();
+  });
+
+  it('should return 400 if user already exists', async () => {
+    jest.spyOn(User, 'findOne').mockResolvedValue({ email: validUser.email });
+
+    const response = await request(app)
+      .post('/api/auth/register')
+      .send(validUser);
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe('User already exists');
+  });
+
+  it('should return 400 if validation fails', async () => {
+    const invalidUser = { ...validUser, email: 'invalid-email' };
+
+    const response = await request(app)
+      .post('/api/auth/register')
+      .send(invalidUser);
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toContain('email');
+  });
+
+  it('should return 400 if roles are invalid', async () => {
+    jest.spyOn(Role, 'find').mockResolvedValue([]);
+
+    const response = await request(app)
+      .post('/api/auth/register')
+      .send(validUser);
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe('One or more roles are invalid');
+  });
+
+  it('should return 500 if server error occurs', async () => {
+    jest.spyOn(User.prototype, 'save').mockRejectedValue(new Error('Database error'));
+
+    const response = await request(app)
+      .post('/api/auth/register')
+      .send(validUser);
+
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe('Server error');
+  });
 });
