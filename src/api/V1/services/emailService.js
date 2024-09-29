@@ -119,26 +119,29 @@ export const sendVerificationEmail = async (userEmail, verificationLink, firstNa
 };
 
 // Send OTP email function
-export const sendOtpEmail = async (userEmail, otp, firstName, lastName) => {
+export const sendOtpEmail = async (userEmail, subject, message, firstName, lastName) => {
+  // Construct the email content
   const content = `
     <p>Hi <span class="bold">${firstName} ${lastName}</span>,</p>
-    <p>Your OTP code for logging in is <strong>${otp}</strong>.</p>
+    <p>${message}</p>
     <p>This code is valid for 5 minutes. Please enter it promptly.</p>
     <p>If you didn't request this code, please ignore this email.</p>
   `;
 
+  // Mail options
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: userEmail,
-    subject: 'Your OTP Code - AlloMedia',
-    html: generateEmailHtml('Welcome to AlloMedia!', content),
+    subject: subject,
+    html: generateEmailHtml('AlloMedia - OTP Request', content), 
   };
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log('OTP email sent');
+    console.log('OTP email sent successfully');
   } catch (error) {
     console.error('Error sending OTP email:', error);
+    throw new Error('Failed to send OTP email');
   }
 };
 

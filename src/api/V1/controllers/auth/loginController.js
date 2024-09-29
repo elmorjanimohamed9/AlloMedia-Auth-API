@@ -28,7 +28,7 @@ export const login = async (req, res) => {
       return res.status(200).json({ token, user });
     }
 
-    await sendOtp(user.email);
+    await sendOtp(email, 'login');
     return res.status(200).json({ message: 'OTP sent to your email' });
 
   } catch (error) {
