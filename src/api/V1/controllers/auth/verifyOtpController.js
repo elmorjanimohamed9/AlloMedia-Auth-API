@@ -19,13 +19,15 @@ export const verifyOtpHandler = async (req, res) => {
                 return res.status(400).json({ message: 'Invalid OTP' });
             }
         } catch (otpError) {
-            return res.status(400).json({ message: otpError.message });
+            return res.status(400).json({ message: otpError.message || 'OTP verification failed' });
         }
 
+        // If OTP is valid, generate token
         const token = generateToken(user._id);
-
         return res.status(200).json({ message: 'OTP verified, login successful', token });
+        
     } catch (error) {
-        return res.status(500).json({ message: 'Server error', error: error.message });
+        // console.error('Error in verifyOtpHandler:', error);
+        return res.status(500).json({ message: 'Server error' });
     }
 };
