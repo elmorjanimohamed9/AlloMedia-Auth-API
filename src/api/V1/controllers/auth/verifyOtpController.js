@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const verifyOtpHandler = async (req, res) => {
-    const { email, otp, action } = req.body;  
+    const { email, otp, action } = req.body;
 
     try {
         // Find the user by email
@@ -22,24 +22,40 @@ export const verifyOtpHandler = async (req, res) => {
         }
 
         // Determine action based on the 'action' parameter
-        if (action === 'login') {
-            // If the action is 'login', generate and return a JWT token
-            const token = generateToken(user._id);
-            return res.status(200).json({ message: 'Login successful', token });
+        if (action === 'changeDevice') {
+            const userAgent = req.headers['user-agent'];
+            const ipAddress = req.ip;
+
+            // Check if the device is already verified
+            const isVerifiedDevice = user.devices.some(device =>
+                device.userAgent === userAgent && device.ipAddress === ipAddress
+            );
+
+            if (!isVerifiedDevice) {
+                user.devices.push({ userAgent, ipAddress, isVerified: true, lastLogin: new Date() });
+                await user.save({ validateModifiedOnly: true });
+                return res.status(200).json({ message: 'Device verified successfully' });
+            }
+
+            return res.status(200).json({ message: 'Device already verified' });
+
         } else if (action === 'resetPassword') {
-            // If the action is 'resetPassword', generate reset token and send reset link via email
+            // Handle password reset
             const resetToken = generateToken(user._id);
             const resetUrl = `${process.env.BASE_URL}/reset-password/${resetToken}`;
 
-            // Send the reset email with the reset URL
             await sendPasswordResetEmail(user.email, resetUrl, user.firstName, user.lastName);
             return res.status(200).json({ message: 'OTP verified. Password reset email sent' });
+
         } else {
-            // If the action is not recognized, return an error
             return res.status(400).json({ message: 'Invalid action provided' });
         }
 
     } catch (error) {
+        if (error.message === 'OTP expired') {
+            return res.status(400).json({ message: 'OTP expired' });
+        }
+        
         console.error('Error in verifyOtpHandler:', error);
         return res.status(500).json({ message: 'Server error' });
     }

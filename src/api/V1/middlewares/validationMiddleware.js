@@ -1,6 +1,5 @@
 import Joi from 'joi';
 
-// Validation schema for forgot password
 const forgotPasswordSchema = Joi.object({
   email: Joi.string().email().required().messages({
     'string.email': 'Please provide a valid email address',
