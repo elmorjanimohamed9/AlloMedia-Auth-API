@@ -1,5 +1,5 @@
 import User from '../../models/User.js';
-import Role from '../../models/Role.js'; // Import the Role model
+import Role from '../../models/Role.js';
 import { sendVerificationEmail } from '../../services/emailService.js';
 import { generateToken } from '../../helpers/jwtHelper.js'; 
 import { registerUserValidation } from '../../validations/registerValidation.js';
@@ -12,6 +12,10 @@ export const register = async (req, res) => {
     if (error) return res.status(400).json({ message: error.details[0].message });
   
     const { firstName, lastName, email, password, phone, address, roles = [] } = req.body;
+
+    // Get user agent and IP address
+    const userAgent = req.headers['user-agent']; 
+    const ipAddress = req.ip; 
   
     try {
         const existingUser = await User.findOne({ email });
@@ -32,6 +36,7 @@ export const register = async (req, res) => {
             address,
             roles,
             isVerified: false,
+            devices: [{ userAgent, ipAddress, lastLogin: new Date(), isVerified: false }]
         });
   
         await newUser.save();
@@ -40,7 +45,7 @@ export const register = async (req, res) => {
         const verificationToken = generateToken(newUser._id);
   
         // Create verification link
-        const verificationLink = `${process.env.BASE_URL}/api/auth/verify-email/${verificationToken}`;
+        const verificationLink = `${process.env.BASE_URL}/api/auth/verify-email/${verificationToken}?email=${encodeURIComponent(email)}`;
   
         // Send verification email
         await sendVerificationEmail(newUser.email, verificationLink, newUser.firstName, newUser.lastName);

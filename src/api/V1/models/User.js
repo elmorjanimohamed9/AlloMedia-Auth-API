@@ -57,6 +57,12 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false 
     },
+    devices: [{
+        userAgent: String,
+        ipAddress: String,
+        lastLogin: Date,
+        isVerified: { type: Boolean, default: false }
+    }],
     createdAt: {
         type: Date,
         default: Date.now
@@ -88,6 +94,32 @@ userSchema.methods.updateLastLogin = function () {
     this.lastLogin = new Date();
     return this.save();
 };
+
+userSchema.methods.addDevice = function(userAgent, ipAddress) {
+    const existingDevice = this.devices.find(
+      device => device.userAgent === userAgent && device.ipAddress === ipAddress
+    );
+  
+    if (existingDevice) {
+      existingDevice.lastLogin = new Date();
+      existingDevice.isVerified = true;
+    } else {
+      this.devices.push({
+        userAgent,
+        ipAddress,
+        lastLogin: new Date(),
+        isVerified: false
+      });
+    }
+    return this.save();
+  };
+  
+  userSchema.methods.isDeviceVerified = function(userAgent, ipAddress) {
+    const device = this.devices.find(
+      d => d.userAgent === userAgent && d.ipAddress === ipAddress
+    );
+    return device ? device.isVerified : false;
+  };  
 
 const User = mongoose.model('User', userSchema);
 export default User;
