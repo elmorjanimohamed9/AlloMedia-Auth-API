@@ -1,8 +1,8 @@
-### **AlloMedia Delivery API - Backend (JWT Authentication)**
+# **AlloMedia Delivery API - Backend (JWT Authentication)**
 
 ---
 
-#### **Table of Contents**
+### **Table of Contents**
 - [Project Overview](#project-overview)
 - [Technologies Used](#technologies-used)
 - [Architecture & Folder Structure](#architecture-folder-structure)
@@ -31,14 +31,16 @@ This API allows managers, clients, and delivery personnel to interact with the p
 
 ### **Technologies Used**
 
-- 🚀 **Node.js & Express:** Backend framework for creating the REST API.
-- 🛠️ **MongoDB & Mongoose:** NoSQL database for storing user and delivery information.
-- 🔒 **JWT (JsonWebToken):** For authentication and session management.
-- 🛡️ **2FA (Two-Factor Authentication):** OTP verification via email or SMS for secure login.
-- 🔑 **Bcrypt.js:** Password hashing for secure storage.
-- ⚙️ **Dotenv:** Management of environment variables.
-- 🧪 **Jest/Mocha:** Unit testing frameworks to ensure robustness.
-- 📧 **Nodemailer:** For sending OTP codes via email.
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js"/>
+  <img src="https://img.shields.io/badge/Express.js-404D59?style=for-the-badge" alt="Express.js"/>
+  <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB"/>
+  <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white" alt="JWT"/>
+  <img src="https://img.shields.io/badge/Bcrypt.js-333?style=for-the-badge" alt="Bcrypt.js"/>
+  <img src="https://img.shields.io/badge/Dotenv-ECD53F?style=for-the-badge&logo=dotenv&logoColor=black" alt="Dotenv"/>
+  <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" alt="Jest"/>
+  <img src="https://img.shields.io/badge/Nodemailer-24c74f?style=for-the-badge" alt="Nodemailer"/>
+</p>
 
 ---
 
@@ -95,6 +97,7 @@ The following are the core routes used for authentication and registration:
 | `/api/auth/verify-otp`        | `POST`      | Verify OTP for 2FA after login                |
 | `/api/auth/forgetpassword`    | `POST`      | Send password reset link                      |
 | `/api/auth/resetpassword/:token` | `POST`    | Reset the password with a provided token      |
+| `/api/auth/logout`            | `POST`      | Logout a user by invalidating the JWT token   |
 
 ---
 
@@ -168,9 +171,15 @@ The key learning objectives for this project are:
 
 ---
 
-### **Jira Board** 
+### **Jira Board**
 
-[![Jira Logo](https://www.vectorlogo.zone/logos/atlassian_jira/atlassian_jira-icon.svg)](https://elmorjanimohamed.atlassian.net/jira/software/projects/AAA/boards/3)
+<p align="center">
+  <a href="https://elmorjanimohamed.atlassian.net/jira/software/projects/AAA/boards/3">
+    <img src="https://www.vectorlogo.zone/logos/atlassian_jira/atlassian_jira-icon.svg" alt="Jira Board" width="100" height="100"/>
+  </a>
+</p>
 
 You can track the progress and tasks for this project on the Jira board:  
 **[AlloMedia Jira Board](https://elmorjanimohamed.atlassian.net/jira/software/projects/AAA/boards/3)**
+
+---
