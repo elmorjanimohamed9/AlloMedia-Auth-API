@@ -73,7 +73,7 @@ To get started with the project, create a `.env` file to configure the environme
 
 ```bash
 PORT=3000
-MONGO_URI=mongodb://localhost:27017/Allo_Media
+MONGO_URI=mongodb://localhost:27017/YOUR_DB
 JWT_SECRET=your_jwt_secret
 OTP_EXPIRATION_TIME=5m
 EMAIL_USER=your_email@example.com
