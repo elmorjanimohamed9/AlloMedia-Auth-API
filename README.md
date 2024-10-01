@@ -1,8 +1,8 @@
-### **AlloMedia Delivery API - Backend (JWT Authentication)**
+# **AlloMedia Delivery API - Backend (JWT Authentication)**
 
 ---
 
-#### **Table of Contents**
+### **Table of Contents**
 - [Project Overview](#project-overview)
 - [Technologies Used](#technologies-used)
 - [Architecture & Folder Structure](#architecture-folder-structure)
@@ -171,9 +171,15 @@ The key learning objectives for this project are:
 
 ---
 
-### **Jira Board** 
+### **Jira Board**
 
-[![Jira Logo](https://www.vectorlogo.zone/logos/atlassian_jira/atlassian_jira-icon.svg)](https://elmorjanimohamed.atlassian.net/jira/software/projects/AAA/boards/3)
+<p align="center">
+  <a href="https://elmorjanimohamed.atlassian.net/jira/software/projects/AAA/boards/3">
+    <img src="https://www.vectorlogo.zone/logos/atlassian_jira/atlassian_jira-icon.svg" alt="Jira Board" width="100" height="100"/>
+  </a>
+</p>
 
 You can track the progress and tasks for this project on the Jira board:  
 **[AlloMedia Jira Board](https://elmorjanimohamed.atlassian.net/jira/software/projects/AAA/boards/3)**
+
+---
