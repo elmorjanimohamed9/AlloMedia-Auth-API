@@ -1,6 +1,3 @@
-import User from '../models/User.js'
-
-
 const otpStore = new Map(); 
 
 export const generateOtp = () => {

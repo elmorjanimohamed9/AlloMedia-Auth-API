@@ -8,8 +8,13 @@ import { verifyToken } from '../../helpers/jwtHelper.js';
 jest.mock('../../helpers/jwtHelper.js'); 
 
 describe('GET /api/auth/verify-email/:token', () => {
+    
     beforeEach(async () => {
         await User.deleteMany({});
+    });
+
+    afterAll(async () => {
+        await mongoose.connection.close(); 
     });
 
     it('should verify the user email successfully', async () => {

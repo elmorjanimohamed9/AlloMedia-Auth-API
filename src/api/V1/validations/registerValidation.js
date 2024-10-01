@@ -19,13 +19,14 @@ const registerUserValidation = Joi.object({
     'string.empty': 'Email is required',
   }),
   password: Joi.string()
-    .min(8)
-    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
-    .required().messages({
-      'string.min': 'Password must be at least 8 characters',
-      'string.empty': 'Password is required',
-      'string.pattern.base': 'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)',
-    }),
+  .min(8)
+  .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, 'password')
+  .required()
+  .messages({
+    'string.min': 'Password must be at least 8 characters long',
+    'string.pattern.name': 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
+    'string.empty': 'Password is required',
+  }),
   phone: Joi.string().pattern(/^[0-9]{10,15}$/).required().messages({
     'string.pattern.base': 'Phone number must be between 10 and 15 digits',
     'string.empty': 'Phone number is required',

@@ -1,8 +1,10 @@
-import express from "express";
+import express from 'express';
 import { resetPasswordController } from '../../controllers/auth/resetPasswordController.js';
+import { validateResetPassword } from '../../middlewares/validationMiddleware.js';
 
 const router = express.Router();
 
-router.post('/:token', resetPasswordController);
 
-export default  router ;
+router.post('/', validateResetPassword, resetPasswordController);
+
+export default router;

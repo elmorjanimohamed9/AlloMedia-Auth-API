@@ -29,15 +29,14 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, 'Please provide a password'],
+        required: true,
         minlength: 8,
         validate: {
-            validator: function (v) {
-                return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(v);
+            validator: function(value) {
+                return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(value);
             },
-            message:
-                'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character, and must be at least 8 characters long'
-        }
+            message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character, and must be at least 8 characters long.',
+        },
     },
     phone: {
         type: String,
@@ -58,6 +57,12 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false 
     },
+    devices: [{
+        userAgent: String,
+        ipAddress: String,
+        lastLogin: Date,
+        isVerified: { type: Boolean, default: false }
+    }],
     createdAt: {
         type: Date,
         default: Date.now
@@ -89,6 +94,32 @@ userSchema.methods.updateLastLogin = function () {
     this.lastLogin = new Date();
     return this.save();
 };
+
+userSchema.methods.addDevice = function(userAgent, ipAddress) {
+    const existingDevice = this.devices.find(
+      device => device.userAgent === userAgent && device.ipAddress === ipAddress
+    );
+  
+    if (existingDevice) {
+      existingDevice.lastLogin = new Date();
+      existingDevice.isVerified = true;
+    } else {
+      this.devices.push({
+        userAgent,
+        ipAddress,
+        lastLogin: new Date(),
+        isVerified: false
+      });
+    }
+    return this.save();
+  };
+  
+  userSchema.methods.isDeviceVerified = function(userAgent, ipAddress) {
+    const device = this.devices.find(
+      d => d.userAgent === userAgent && d.ipAddress === ipAddress
+    );
+    return device ? device.isVerified : false;
+  };  
 
 const User = mongoose.model('User', userSchema);
 export default User;
