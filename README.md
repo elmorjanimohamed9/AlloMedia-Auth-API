@@ -31,12 +31,6 @@ This API allows managers, clients, and delivery personnel to interact with the p
 
 ### **Technologies Used**
 
-Here's how you can add logos with a clean and organized style to your **AlloMedia Delivery API - Backend (JWT Authentication)** README:
-
----
-
-### **Technologies Used**
-
 <p align="center">
   <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js"/>
   <img src="https://img.shields.io/badge/Express.js-404D59?style=for-the-badge" alt="Express.js"/>
