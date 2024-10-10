@@ -139,7 +139,7 @@ export const sendVerificationEmail = async (userEmail, verificationLink, firstNa
   }
 };
 
-// Updated send OTP email function
+// send OTP email function
 export const sendOtpEmail = async (userEmail, subject, message, firstName, lastName) => {
   const content = `
     <p>Hi <span class="highlight">${firstName} ${lastName}</span>,</p>
@@ -164,7 +164,7 @@ export const sendOtpEmail = async (userEmail, subject, message, firstName, lastN
   }
 };
 
-// Updated send password reset email function
+//send password reset email function
 export const sendPasswordResetEmail = async (userEmail, resetUrl, firstName, lastName) => {
   const content = `
     <p>Hi <span class="highlight">${firstName} ${lastName}</span>,</p>

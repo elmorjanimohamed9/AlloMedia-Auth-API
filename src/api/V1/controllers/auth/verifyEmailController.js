@@ -1,27 +1,30 @@
 import User from '../../models/User.js';
-import { verifyToken } from '../../helpers/jwtHelper.js'; 
+import jwt from 'jsonwebtoken';
+import logger from '../../utils/logger.js';
 
 export const verifyEmail = async (req, res) => {
     const { token } = req.params;
-
-    const decoded = verifyToken(token);
-    if (!decoded) return res.status(400).json({ message: 'Invalid or expired token' });
-
+    
     try {
-        const user = await User.findById(decoded.id);
-        if (!user) return res.status(400).json({ message: 'User not found' });
+        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+        if (!decoded) {
+            return res.status(400).json({ verified: false, message: 'Invalid or expired token' });
+        }
 
-        if (user.isEmailVerified) return res.status(400).json({ message: 'User is already verified' });
+        const user = await User.findById(decoded.userId);
+        if (!user) {
+            return res.status(404).json({ verified: false, message: 'User not found' });
+        }
 
-        user.isEmailVerified = true; 
-        await user.save({ validateBeforeSave: false });
+        if (user.isEmailVerified) {
+            return res.status(200).json({ verified: true, message: 'Email already verified' });
+        }
 
-        res.status(200).json({ message: 'Email verified successfully. You can now log in.' });
+        await User.updateOne({ _id: user._id }, { isEmailVerified: true });
+
+        return res.status(200).json({ verified: true, message: 'Email verified successfully' });
     } catch (error) {
-        console.error('Error during email verification:', error);
-        return res.status(500).json({ message: 'Server error', error });
+        logger.error('Email verification error:', error);
+        return res.status(500).json({ verified: false, message: 'Server error', error: error.message });
     }
 };
-
-
-

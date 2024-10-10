@@ -1,16 +1,23 @@
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
-const authenticateToken = (req, res, next) => {
+dotenv.config();
+
+export const verifyToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; 
+  const token = authHeader && authHeader.split(' ')[1];
 
-  if (token == null) return res.sendStatus(401);
+  if (!token) {
+    return res.status(401).json({ message: 'Access token is required' });
+  }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403); 
-    req.user = user;
-    next(); 
-  });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    req.userId = decoded.userId;
+    next();
+  } catch (error) {
+    return res.status(403).json({ message: 'Invalid token' });
+  }
 };
 
-export default authenticateToken;
+export default verifyToken;
