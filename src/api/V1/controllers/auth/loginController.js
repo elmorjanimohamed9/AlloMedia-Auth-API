@@ -114,7 +114,23 @@ export const refreshToken = async (req, res) => {
 
   try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const newAccessToken = generateAccessToken(decoded.userId);
+    const userId = decoded.userId;
+
+    // Check if the refresh token exists in Redis
+    const storedToken = await redisClient.get(`refreshToken:${userId}`);
+    if (!storedToken || storedToken !== refreshToken) {
+      return res.status(403).json({ message: 'Invalid refresh token' });
+    }
+
+    const newAccessToken = generateAccessToken(userId);
+    const newRefreshToken = await generateRefreshToken(userId);
+
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 
+    });
 
     res.json({ accessToken: newAccessToken });
   } catch (error) {
