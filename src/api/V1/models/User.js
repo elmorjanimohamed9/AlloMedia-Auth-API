@@ -21,8 +21,11 @@ const userSchema = new mongoose.Schema({
         match: [/.+@.+\..+/, 'Please provide a valid email address'],
         validate: {
             validator: async function (value) {
-                const emailCount = await this.model('User').countDocuments({ email: value });
-                return !emailCount;  
+                if (this.isNew || this.isModified('email')) {
+                    const emailCount = await this.constructor.countDocuments({ email: value });
+                    return !emailCount;
+                }
+                return true;
             },
             message: 'Email already exists'
         }
@@ -74,20 +77,6 @@ const userSchema = new mongoose.Schema({
     lockUntil: { type: Date },
 });
 
-// Hook pour crypter le mot de passe avant de sauvegarder l'utilisateur
-userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) {
-        return next();
-    }
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-});
-
-// Méthode pour comparer les mots de passe
-userSchema.methods.matchPassword = async function (enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password);
-};
 
 // Méthode pour mettre à jour la dernière connexion
 userSchema.methods.updateLastLogin = function () {

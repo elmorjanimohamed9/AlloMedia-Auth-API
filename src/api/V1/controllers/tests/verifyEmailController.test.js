@@ -1,83 +1,78 @@
-import mongoose from 'mongoose';
 import request from 'supertest';
-import app from '../../../../app';
+import express from 'express';
+import { verifyEmail } from '../auth/verifyEmailController.js';
 import User from '../../models/User.js';
-import { generateToken } from '../../helpers/jwtHelper.js'; 
-import { verifyToken } from '../../helpers/jwtHelper.js';
+import jwt from 'jsonwebtoken';
 
-jest.mock('../../helpers/jwtHelper.js'); 
+jest.mock('../../models/User.js');
+jest.mock('jsonwebtoken');
+
+const app = express();
+app.use(express.json());
+app.get('/api/auth/verify-email/:token', verifyEmail);
 
 describe('GET /api/auth/verify-email/:token', () => {
-    
-    beforeEach(async () => {
-        await User.deleteMany({});
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
-    afterAll(async () => {
-        await mongoose.connection.close(); 
-    });
+    it('should verify email successfully', async () => {
+        const mockUser = { _id: 'user-id', isEmailVerified: false };
+        jwt.verify.mockReturnValue({ userId: 'user-id' });
+        User.findById.mockResolvedValue(mockUser);
+        User.updateOne.mockResolvedValue({});
 
-    it('should verify the user email successfully', async () => {
-        const uniqueEmail = `john.doe.${Date.now()}@example.com`;
-        const userData = {
-            firstName: 'John',
-            lastName: 'Doe',
-            email: uniqueEmail,
-            password: 'Password123!',
-            phone: '0123456789',
-            address: '123 Main St',
-        };
+        const response = await request(app).get('/api/auth/verify-email/valid-token');
 
-        const user = await User.create(userData);
-        const token = generateToken(user._id);
-
-        // Mock the verifyToken function to return the user ID
-        verifyToken.mockReturnValue({ id: user._id });
-
-        const response = await request(app).get(`/api/auth/verify-email/${token}`);
         expect(response.status).toBe(200);
-        expect(response.body.message).toBe('Email verified successfully. You can now log in.');
+        expect(response.body).toEqual({ verified: true, message: 'Email verified successfully' });
+        expect(User.updateOne).toHaveBeenCalledWith({ _id: 'user-id' }, { isEmailVerified: true });
     });
 
-    it('should return 400 if token is invalid or expired', async () => {
-        const invalidToken = 'invalid-token';
-        verifyToken.mockReturnValue(null); 
+    it('should return 400 if token is invalid', async () => {
+        jwt.verify.mockImplementation(() => {
+            throw new jwt.JsonWebTokenError('Invalid token');
+        });
 
-        const response = await request(app).get(`/api/auth/verify-email/${invalidToken}`);
+        const response = await request(app).get('/api/auth/verify-email/invalid-token');
+
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe('Invalid or expired token');
+        expect(response.body).toEqual({ verified: false, message: 'Invalid or expired token' });
     });
 
-    it('should return 400 if user is not found', async () => {
-        const nonExistentUserId = new mongoose.Types.ObjectId();
-        const token = generateToken(nonExistentUserId);
-        
-        verifyToken.mockReturnValue({ id: nonExistentUserId }); 
+    it('should return 404 if user is not found', async () => {
+        jwt.verify.mockReturnValue({ userId: 'non-existent-user-id' });
+        User.findById.mockResolvedValue(null);
 
-        const response = await request(app).get(`/api/auth/verify-email/${token}`);
-        expect(response.status).toBe(400);
-        expect(response.body.message).toBe('User not found');
+        const response = await request(app).get('/api/auth/verify-email/valid-token');
+
+        expect(response.status).toBe(404);
+        expect(response.body).toEqual({ verified: false, message: 'User not found' });
     });
 
-    it('should return 400 if the user is already verified', async () => {
-        const uniqueEmail = `jane.doe.${Date.now()}@example.com`;
-        const userData = {
-            firstName: 'Jane',
-            lastName: 'Doe',
-            email: uniqueEmail,
-            password: 'Password123!',
-            phone: '0123456789',
-            address: '456 Main St',
-            isEmailVerified: true, 
-        };
+    it('should return 200 if email is already verified', async () => {
+        const mockUser = { _id: 'user-id', isEmailVerified: true };
+        jwt.verify.mockReturnValue({ userId: 'user-id' });
+        User.findById.mockResolvedValue(mockUser);
 
-        const user = await User.create(userData);
-        const token = generateToken(user._id);
+        const response = await request(app).get('/api/auth/verify-email/valid-token');
 
-        verifyToken.mockReturnValue({ id: user._id });
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ verified: true, message: 'Email already verified' });
+        expect(User.updateOne).not.toHaveBeenCalled();
+    });
 
-        const response = await request(app).get(`/api/auth/verify-email/${token}`);
-        expect(response.status).toBe(400);
-        expect(response.body.message).toBe('User is already verified');
+    it('should return 500 if server error occurs', async () => {
+        jwt.verify.mockReturnValue({ userId: 'user-id' });
+        User.findById.mockRejectedValue(new Error('Database error'));
+
+        const response = await request(app).get('/api/auth/verify-email/valid-token');
+
+        expect(response.status).toBe(500);
+        expect(response.body).toEqual({
+            verified: false,
+            message: 'Server error',
+            error: 'Database error'
+        });
     });
 });
