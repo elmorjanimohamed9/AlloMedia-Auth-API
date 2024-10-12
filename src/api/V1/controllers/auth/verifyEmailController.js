@@ -24,6 +24,9 @@ export const verifyEmail = async (req, res) => {
 
         return res.status(200).json({ verified: true, message: 'Email verified successfully' });
     } catch (error) {
+        if (error instanceof jwt.JsonWebTokenError) {
+            return res.status(400).json({ verified: false, message: 'Invalid or expired token' });
+        }
         logger.error('Email verification error:', error);
         return res.status(500).json({ verified: false, message: 'Server error', error: error.message });
     }

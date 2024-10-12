@@ -1,14 +1,13 @@
-import User from '../models/User.js';
 import { createClient } from 'redis';
 import logger from '../utils/logger.js';
 
-const redisClient = createClient({
-    url: process.env.REDIS_URL || 'redis://localhost:6379'
-});
+const redisClient = createClient();
 
-redisClient.on('error', (err) => logger.error('Redis Client Error', err));
+async function initializeRedis() {
+  await redisClient.connect();
+}
 
-await redisClient.connect();
+initializeRedis().catch(console.error);
 
 export const generateOtp = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();

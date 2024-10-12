@@ -5,13 +5,13 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const redisClient = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379'
-});
+const redisClient = createClient();
 
-redisClient.on('error', (err) => logger.error('Redis Client Error', err));
+async function initializeRedis() {
+  await redisClient.connect();
+}
 
-await redisClient.connect();
+initializeRedis().catch(console.error);
 
 export const generateAccessToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_ACCESS_SECRET, { expiresIn: '1h' });
